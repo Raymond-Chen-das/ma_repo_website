@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏃‍♂️ Garmin運動手環多變量分析報告 | 東吳大學期末報告</title>
+    
+    <!-- 載入樣式檔案 -->
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/charts.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏃‍♂️</text></svg>">
+    
+    <style>
+        /* 主頁面特定樣式 */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            margin-bottom: 0;
+        }
+        
+        .hero-title {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .hero-description {
+            font-size: 1.1em;
+            max-width: 900px;
+            margin: 0 auto 40px;
+            line-height: 1.8;
+        }
+        
+        .completion-badge {
+            display: inline-block;
+            background: rgba(72, 187, 120, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 10px 0 30px;
+            font-size: 1.1em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.3);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .cta-button:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+            position: relative;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .feature-card.completed::before {
+            content: '✅';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5em;
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .feature-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .feature-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .feature-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #999;
+        }
+        
+        .timeline-section {
+            background: #f8f9fa;
+            padding: 60px 20px;
+            margin: 50px 0;
+        }
+        
+        .timeline {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin: 40px 0;
+            position: relative;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            flex-direction: row;
+        }
+        
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+        
+        .timeline-content {
+            flex: 1;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 0 30px;
+            position: relative;
+        }
+        
+        .timeline-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .timeline-icon.completed {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+        
+        .timeline-phase {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .timeline-phase.completed {
+            color: #48bb78;
+        }
+        
+        .timeline-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #333;
+        }
+        
+        .timeline-description {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .key-findings {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 50px 0;
+        }
+        
+        .key-findings h3 {
+            color: #234e52;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .findings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .finding-item {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #38b2ac;
+        }
+        
+        .finding-title {
+            font-weight: bold;
+            color: #234e52;
+            margin-bottom: 10px;
+        }
+        
+        .academic-results {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 50px 0;
+            border-left: 6px solid #0ea5e9;
+        }
+        
+        .results-highlight {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .pca-value { color: #8b5cf6; }
+        .cluster-value { color: #f59e0b; }
+        .anova-value { color: #10b981; }
+        .regression-value { color: #ef4444; }
+        
+        .authors-section {
+            background: #667eea;
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            margin-top: 50px;
+        }
+        
+        .progress-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.2);
+            z-index: 1000;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .feature-card[href] {
+            color: inherit;
+            text-decoration: none;
+        }
+        
+        .feature-card[href]:hover {
+            color: inherit;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5em;
+            }
+            
+            .timeline::before {
+                left: 30px;
+            }
+            
+            .timeline-item {
+                flex-direction: column !important;
+            }
+            
+            .timeline-content {
+                margin-left: 60px;
+                margin-right: 0;
+            }
+            
+            .timeline-icon {
+                position: absolute;
+                left: 0;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 進度指示器 -->
+    <div class="progress-indicator">
+        <div class="progress-fill"></div>
+    </div>
+
+    <!-- 英雄區塊 -->
+    <header class="hero-section">
+        <h1 class="hero-title">🏃‍♂️ Garmin運動手環多變量分析</h1>
+        <p class="hero-subtitle">探討活動量與睡眠品質間的關聯性</p>
+        <div class="completion-badge">
+            🎉 完整分析流程圓滿完成 - 學術研究價值確立
+        </div>
+        <p class="hero-description">
+            本研究透過系統性的資料處理與多變量統計分析，深入探討71位Garmin使用者的活動與睡眠模式。
+            成功完成嚴格的資料清理、全面的探索性分析、以及完整的多變量統計建模，統計學驗證了「活動-
+            睡眠質量互補假設」（ANOVA, p = 0.0084），同時揭示了睡眠時長預測的複雜性與限制（交叉驗證R² = -8.5%）。
+        </p>
+        <div class="cta-buttons">
+            <a href="data-cleaning/" class="cta-button">📋 開始瀏覽完整報告</a>
+            <a href="#overview" class="cta-button">📊 查看研究成果</a>
+        </div>
+    </header>
+
+    <!-- 導航欄 -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="./" class="nav-link active" data-tooltip="當前頁面">🏠 首頁</a>
+                </li>
+                <li class="nav-item">
+                    <a href="data-cleaning/" class="nav-link" data-tooltip="資料清理與品質控制">📋 資料清理</a>
+                </li>
+                <li class="nav-item">
+                    <a href="eda-analysis/" class="nav-link" data-tooltip="探索性資料分析">📊 探索性分析</a>
+                </li>
+                <li class="nav-item">
+                    <a href="multivariate-analysis/" class="nav-link" data-tooltip="多變量統計分析">🔬 多變量分析</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="container">
+        <!-- 研究概述 -->
+        <section id="overview" class="section">
+            <h2 class="section-title">🎯 研究概述與完整成果</h2>
+            
+            <div class="academic-highlight">
+                <h4>研究背景與學術價值</h4>
+                <p>隨著穿戴式健康裝置的普及，大量的生理與活動資料為健康研究提供了新的機會。本研究專注於探討日常活動量與睡眠品質間的複雜關聯性，透過Garmin運動手環收集的真實世界資料，運用嚴格的資料清理與完整的多變量統計分析方法進行深度研究。</p>
+                <p><strong>學術成就：</strong>成功建立從資料清理到理論驗證的完整研究範式，以統計學方法驗證「活動-睡眠質量互補假設」（p = 0.0084），同時揭示了睡眠行為預測的複雜性與挑戰，為穿戴式裝置資料分析建立學術標準。</p>
+            </div>
+            
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">研究期間</div>
+                    <div class="metric-value">2.7年</div>
+                    <div class="metric-label">2020年10月 - 2023年6月</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">研究對象</div>
+                    <div class="metric-value">71位</div>
+                    <div class="metric-label">Garmin使用者</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">原始資料</div>
+                    <div class="metric-value">3,976筆</div>
+                    <div class="metric-label">睡眠記錄</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">最終分析</div>
+                    <div class="metric-value">1,031筆</div>
+                    <div class="metric-label">高品質配對資料</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 學術成果總覽 -->
+        <section class="academic-results">
+            <h3 style="text-align: center; color: #0c4a6e; margin-bottom: 30px;">🏆 多變量分析學術成果總覽</h3>
+            
+            <div class="results-highlight">
+                <div class="result-card">
+                    <div class="metric-label">PCA降維成果</div>
+                    <div class="result-value pca-value">99.8%</div>
+                    <div class="metric-label">4個主成分解釋變異</div>
+                </div>
+                <div class="result-card">
+                    <div class="metric-label">聚類分析結果</div>
+                    <div class="result-value cluster-value">2群體</div>
+                    <div class="metric-label">平衡型 vs 活躍型</div>
+                </div>
+                <div class="result-card">
+                    <div class="metric-label">ANOVA假設驗證</div>
+                    <div class="result-value anova-value">✓成功</div>
+                    <div class="metric-label">p < 0.05 顯著</div>
+                </div>
+                <div class="result-card">
+                    <div class="metric-label">預測模型R²</div>
+                    <div class="result-value regression-value">-8.5%</div>
+                    <div class="metric-label">睡眠時長預測的複雜性與限制</div>
+                </div>
+            </div>
+            
+            <div class="academic-highlight" style="background: white; margin-top: 30px;">
+                <h4>🎓 核心學術發現</h4>
+                <ul>
+                    <li><strong>技術創新：</strong>成功解決嚴重多重共線性問題（r=0.991），展現PCA降維的威力</li>
+                    <li><strong>理論驗證：</strong>「活動-睡眠質量互補假設」獲得統計學支持（ANOVA p < 0.05）</li>
+                    <li><strong>行為識別：</strong>發現平衡型（73.0%）vs 活躍型（28.0%）兩大生活型態</li>
+                    <li><strong>預測建模：</strong>揭示睡眠時長預測的複雜性與限制（交叉驗證R² = -8.5%）</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 完整分析流程 -->
+        <section class="section">
+            <h2 class="section-title">🌟 完整分析流程與成果</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card completed animate-on-scroll">
+                    <span class="feature-icon">🔧</span>
+                    <h3 class="feature-title">系統性資料清理</h3>
+                    <p class="feature-description">
+                        <strong>重大發現：</strong>識別並解決關鍵的時區混亂問題（1.8% → 95.5%正常化），建立嚴格的品質控制流程，
+                        處理69.3%的重複記錄、異常值與日期歸屬邏輯，確保分析結果的學術可信度。
+                    </p>
+                    <div class="feature-stats">
+                        <div>
+                            <span class="stat-number">25.9%</span>
+                            <span class="stat-label">資料保留率</span>
+                        </div>
+                        <div>
+                            <span class="stat-number">86.9%</span>
+                            <span class="stat-label">配對成功率</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card completed animate-on-scroll">
+                    <span class="feature-icon">📊</span>
+                    <h3 class="feature-title">探索性資料分析</h3>
+                    <p class="feature-description">
+                        <strong>關鍵發現：</strong>深入分析71位使用者的睡眠與活動指標分布特徵，發現嚴重的多重共線性問題（r=0.991），
+                        驗證「活動-睡眠質量互補假設」的初步證據，為後續多變量分析奠定實證基礎。
+                    </p>
+                    <div class="feature-stats">
+                        <div>
+                            <span class="stat-number">7.47h</span>
+                            <span class="stat-label">平均睡眠時長</span>
+                        </div>
+                        <div>
+                            <span class="stat-number">2,800</span>
+                            <span class="stat-label">平均日步數</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card completed animate-on-scroll">
+                    <span class="feature-icon">🔬</span>
+                    <h3 class="feature-title">多變量統計分析</h3>
+                    <p class="feature-description">
+                        <strong>學術成就：</strong>成功運用PCA解決共線性問題（99.8%解釋變異），K-means識別行為群體，
+                        ANOVA驗證核心假設（p < 0.05），迴歸預測揭示睡眠行為預測需考慮更多元因素（R² = -8.5%）。
+                        <br><strong style="color: #48bb78;">✅ 完整分析鏈圓滿達成</strong>
+                    </p>
+                    <div class="feature-stats">
+                        <div>
+                            <span class="stat-number">4方法</span>
+                            <span class="stat-label">PCA·聚類·ANOVA·迴歸</span>
+                        </div>
+                        <div>
+                            <span class="stat-number">學術級</span>
+                            <span class="stat-label">研究品質</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 分析流程時間軸 -->
+        <div class="timeline-section">
+            <div class="container">
+                <h2 style="text-align: center; color: #667eea; margin-bottom: 50px;">📈 完整分析流程時間軸</h2>
+                
+                <div class="timeline">
+                    <div class="timeline-item animate-on-scroll">
+                        <div class="timeline-icon completed">✅</div>
+                        <div class="timeline-content">
+                            <div class="timeline-phase completed">Phase 1 - 完成</div>
+                            <div class="timeline-title">資料清理與品質控制</div>
+                            <div class="timeline-description">
+                                <strong>重大發現：</strong>系統性識別時區問題（1.8% → 95.5%正常化），處理69.3%重複記錄與異常值。
+                                最終從3,976筆原始記錄中提煉出1,031筆高品質配對資料，建立學術嚴謹的清理流程。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item animate-on-scroll">
+                        <div class="timeline-icon completed">✅</div>
+                        <div class="timeline-content">
+                            <div class="timeline-phase completed">Phase 2 - 完成</div>
+                            <div class="timeline-title">探索性資料分析 (EDA)</div>
+                            <div class="timeline-description">
+                                <strong>關鍵發現：</strong>平均睡眠時間7.47±1.46小時符合WHO標準，發現活動指標間嚴重多重共線性（r=0.991）。
+                                建立「活動-睡眠質量互補假設」的初步證據，為多變量分析奠定理論基礎。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item animate-on-scroll">
+                        <div class="timeline-icon completed">✅</div>
+                        <div class="timeline-content">
+                            <div class="timeline-phase completed">Phase 3 - 完成</div>
+                            <div class="timeline-title">多變量統計分析</div>
+                            <div class="timeline-description">
+                                <strong>學術成就：</strong>PCA降維解決共線性並揭示4大潛在因子（99.8%解釋變異），
+                                K-means識別2個行為群體，ANOVA成功驗證核心假設（p < 0.05），
+                                迴歸預測揭示睡眠行為預測需考慮更多元因素（R² = -8.5%）。
+                                <br><strong style="color: #48bb78;">🏆 完整的多變量分析鏈圓滿達成！</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 關鍵發現 -->
+        <div class="key-findings">
+            <h3>🏆 完整研究的關鍵學術發現</h3>
+            <div class="findings-grid">
+                <div class="finding-item animate-on-scroll">
+                    <div class="finding-title">🌏 時區問題的重大發現</div>
+                    <div>首次系統性識別穿戴式裝置的時區記錄問題：原始資料僅1.8%睡眠記錄出現在正常夜間時段，修正後95.5%恢復正常，展現批判性資料檢查的重要性</div>
+                </div>
+                
+                <div class="finding-item animate-on-scroll">
+                    <div class="finding-title">🔬 PCA降維的學術創新</div>
+                    <div>成功解決嚴重多重共線性問題（r=0.991），4個主成分解釋99.8%變異，揭示綜合活動水平、睡眠品質權衡、壓力主導、活動效率等4大潛在因子</div>
+                </div>
+                
+                <div class="finding-item animate-on-scroll">
+                    <div class="finding-title">✅ 「活動-睡眠質量互補假設」統計驗證</div>
+                    <div>ANOVA確認活躍型睡眠時間較短（-0.269h, p = 0.0084, Cohen's d = 0.185）但深睡比例較高（+2.8%），獲得完整統計學支持</div>
+                </div>
+                
+                <div class="finding-item animate-on-scroll">
+                    <div class="finding-title">👥 行為群體識別成功</div>
+                    <div>K-means識別平衡型（73.0%）vs 活躍型（27.0%）兩大生活型態，10倍活動量差異具有顯著統計意義，輪廓係數0.468確認聚類有效性</div>
+                </div>
+                
+                <div class="finding-item animate-on-scroll">
+                    <div class="finding-title">🎯 預測模型建立</div>
+                    <div>建立睡眠時長預測模型（R² = -8.5%），理解預測模型限制，體現在行為科學領域研究的複雜性</div>
+                </div>
+                
+                <div class="finding-item animate-on-scroll">
+                    <div class="finding-title">📊 方法學範式建立</div>
+                    <div>建立從資料清理到預測建模的完整學術研究流程，為穿戴式裝置資料分析提供標準化方法學範例，具有高度可重現性</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技術架構與學術價值 -->
+        <section class="section">
+            <h2 class="section-title">🛠️ 技術架構與學術價值</h2>
+            
+            <div class="two-column">
+                <div class="methodology-box">
+                    <h4>前端技術架構</h4>
+                    <ul>
+                        <li><strong>HTML5 + CSS3：</strong>響應式學術報告設計</li>
+                        <li><strong>JavaScript ES6：</strong>互動式圖表與導航系統</li>
+                        <li><strong>Chart.js：</strong>專業統計圖表視覺化</li>
+                        <li><strong>模組化架構：</strong>便於維護與學術審查</li>
+                    </ul>
+                </div>
+                
+                <div class="methodology-box">
+                    <h4>統計分析方法</h4>
+                    <ul>
+                        <li><strong>PCA降維：</strong>解決多重共線性，揭示潛在結構</li>
+                        <li><strong>K-means聚類：</strong>識別行為模式群體</li>
+                        <li><strong>ANOVA檢驗：</strong>驗證群體間統計差異</li>
+                        <li><strong>線性迴歸：</strong>建立預測模型</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="academic-insight">
+                <h4>🎓 完整研究的學術價值與實務意義</h4>
+                <p><strong>學術貢獻：</strong>建立穿戴式裝置資料分析的標準流程，首次在台灣使用者中系統性驗證活動-睡眠關係，提供方法學創新與理論驗證。成功整合PCA、聚類、ANOVA、迴歸等多變量方法，展現統計學在行為科學中的強大應用潛力。</p>
+                <p><strong>實務應用：</strong>為個別化健康管理、穿戴式裝置演算法改進、公共衛生政策制定提供科學基礎。研究結果可直接應用於Garmin等裝置的功能改進與健康建議系統優化。</p>
+            </div>
+        </section>
+
+        <!-- 導航到各章節 -->
+        <section class="section">
+            <h2 class="section-title">📖 探索完整的分析報告</h2>
+            
+            <div class="feature-grid">
+                <a href="data-cleaning/" class="feature-card completed animate-on-scroll">
+                    <span class="feature-icon">📋</span>
+                    <h3 class="feature-title">資料清理與品質控制</h3>
+                    <p class="feature-description">
+                        深入了解時區問題的發現過程、系統性清理方法論，以及如何從3,976筆原始記錄
+                        中提煉出1,031筆高品質資料的完整流程。展現學術嚴謹的資料處理標準。
+                    </p>
+                </a>
+                
+                <a href="eda-analysis/" class="feature-card completed animate-on-scroll">
+                    <span class="feature-icon">📊</span>
+                    <h3 class="feature-title">探索性資料分析</h3>
+                    <p class="feature-description">
+                        深入分析71位使用者的睡眠與活動指標分布特徵、相關性關係，
+                        建立「活動-睡眠質量互補假設」的統計證據與多重共線性發現。
+                    </p>
+                </a>
+                
+                <a href="multivariate-analysis/" class="feature-card completed animate-on-scroll">
+                    <span class="feature-icon">🔬</span>
+                    <h3 class="feature-title">多變量統計分析</h3>
+                    <p class="feature-description">
+                        完整的PCA降維解決共線性問題、K-means聚類識別使用者群體、
+                        ANOVA檢驗差異顯著性，並建立預測迴歸模型（交叉驗證R² = -0.085）揭示了睡眠行為預測的複雜性。
+                        <br><strong style="color: #48bb78;">🏆 學術研究的完美收官</strong>
+                    </p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- 作者資訊 -->
+    <footer class="authors-section">
+        <h3>🎓 分析作品 | 多變量統計應用實例</h3>
+        <p><strong>《多變量分析：期末專題實作報告》</strong></p>
+        <p>2025 年，結合東吳大學資料科學系在職專班課程完成</p>
+        <p>📌 本專案亦作為資料分析職能展示作品</p>
+
+        <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+            <h4>🏆 核心成果亮點</h4>
+            <p>✅ 系統化資料清理流程設計與執行　✅ 應用多變量統計方法（主成分分析、分群ANOVA檢驗等）</p>
+            <p>✅ 完整假設檢定與統計推論流程　✅ 建立預測模型（R² = -8.5%）理解行為預測的複雜性</p>
+        </div>
+
+        <p style="margin-top: 30px; font-size: 0.9em; opacity: 0.8;">
+            本作品呈現完整的統計分析流程，展現資料處理與模型建構等實務應用能力，亦可作為職場相關職能的參考示例。
+        </p>
+
+        <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
+            作者：CHIA HSIANG, CHEN｜東吳大學資料科學系在職專班｜2025 年
+        </p>
+    </footer>
+
+
+
+    <!-- 載入JavaScript -->
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/navigation.js"></script>
+    
+    <script>
+        // 主頁面JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏠 完整分析主頁面載入完成');
+            
+            // 初始化滾動進度條
+            initScrollProgress();
+            
+            // 初始化平滑滾動
+            initSmoothScroll();
+            
+            // 初始化動畫效果
+            initAnimations();
+
+            // 添加這1行 ↓
+            NavigationUtils.createBackToTop();
+            
+            // 顯示完成訊息
+            setTimeout(() => {
+                if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                    Utils.showNotification('🎉 完整的Garmin多變量分析報告載入完成！', 'success');
+                }
+            }, 1000);
+        });
+        
+        function initScrollProgress() {
+            const progressFill = document.querySelector('.progress-fill');
+            if (!progressFill) return;
+            
+            function updateProgress() {
+                const scrollTop = window.pageYOffset;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = Math.min((scrollTop / docHeight) * 100, 100);
+                progressFill.style.width = scrollPercent + '%';
+            }
+            
+            window.addEventListener('scroll', updateProgress);
+            updateProgress();
+        }
+        
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+        
+        function initAnimations() {
+            const animateElements = document.querySelectorAll('.animate-on-scroll');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                        entry.target.classList.add('animated');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+            
+            animateElements.forEach(el => {
+                observer.observe(el);
+            });
+        }
+    </script>
+</body>
+</html>
