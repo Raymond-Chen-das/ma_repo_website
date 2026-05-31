@@ -95,7 +95,7 @@ python scripts/generate_synthetic_data.py
 
 ## 已知限制 / Known Limitations
 
-本專案為一年前的課程作品，已主動整理出資料、統計方法與工程實作上的限制與未來改進方向，
+本專案為一年級(2025年)的課程作品，已主動整理出資料、統計方法與工程實作上的限制與未來改進方向，
 詳見 [`LIMITATIONS.md`](LIMITATIONS.md)。
 
 ---
