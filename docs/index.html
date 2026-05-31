@@ -426,6 +426,9 @@
                 <li class="nav-item">
                     <a href="multivariate-analysis/" class="nav-link" data-tooltip="多變量統計分析">🔬 多變量分析</a>
                 </li>
+                <li class="nav-item">
+                    <a href="limitations/" class="nav-link" data-tooltip="研究限制與未來改進">⚠️ 研究限制</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -685,6 +688,29 @@
             </div>
         </section>
 
+        <!-- 資料來源與隱私 -->
+        <section class="section">
+            <h2 class="section-title">🔒 資料來源與隱私</h2>
+
+            <div class="academic-highlight">
+                <h4>負責任地處理第三方個人健康資料</h4>
+                <p>本研究分析的是 <strong>Garmin 運動手環的穿戴式裝置資料</strong>（71 位使用者、約 2.7 年、原始 3,976 筆睡眠記錄），屬於<strong>第三方專有且含個人健康資訊</strong>的資料。基於資料授權與隱私考量，原始與逐筆資料一律不公開。</p>
+            </div>
+
+            <div class="solution-card">
+                <h4>✅ 公開前採取的資料保護措施</h4>
+                <ul>
+                    <li><strong>不公開原始與逐筆資料：</strong>所有含個人紀錄的檔案皆排除於版本控制之外。</li>
+                    <li><strong>只揭露彙總結果：</strong>本報告與儀表板僅呈現變數層級的統計量（平均、相關、負載等），不含任何可識別個人的內容。</li>
+                    <li><strong>去識別化：</strong>移除報告中殘留的使用者代碼，確保無法回溯到個別使用者。</li>
+                    <li><strong>可重現但不洩密：</strong>GitHub 專案附合成假資料產生器，讓他人能執行完整分析流程而不接觸真實資料。</li>
+                </ul>
+                <p style="margin-top: 15px;">📄 完整的資料來源、schema 與隱私說明見 GitHub：
+                    <a href="https://github.com/Raymond-Chen-das/garmin-multivariate-analysis/blob/main/DATA.md" target="_blank" rel="noopener"><strong>DATA.md</strong></a>
+                </p>
+            </div>
+        </section>
+
         <!-- 導航到各章節 -->
         <section class="section">
             <h2 class="section-title">📖 探索完整的分析報告</h2>
@@ -715,6 +741,16 @@
                         完整的PCA降維解決共線性問題、K-means聚類識別使用者群體、
                         ANOVA檢驗差異顯著性，並建立預測迴歸模型（交叉驗證R² = -0.085）揭示了睡眠行為預測的複雜性。
                         <br><strong style="color: #48bb78;">🏆 學術研究的完美收官</strong>
+                    </p>
+                </a>
+
+                <a href="limitations/" class="feature-card completed animate-on-scroll">
+                    <span class="feature-icon">⚠️</span>
+                    <h3 class="feature-title">研究限制與未來改進</h3>
+                    <p class="feature-description">
+                        誠實檢視資料（重複測量）、統計方法（前處理洩漏、因子分析適切性）
+                        與工程面的限制，並提出具體改進方向。
+                        <br><strong style="color: #ed8936;">🔎 科學誠實與成熟度的展現</strong>
                     </p>
                 </a>
             </div>

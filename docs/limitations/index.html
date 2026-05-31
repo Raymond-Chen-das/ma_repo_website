@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ 研究限制與未來改進 | Garmin運動手環多變量分析</title>
+
+    <!-- 載入樣式檔案 -->
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/charts.css">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>">
+</head>
+<body>
+    <!-- 頁面頭部 -->
+    <header class="header">
+        <h1>⚠️ 研究限制與未來改進</h1>
+        <p>對本專案資料、統計方法與工程實作的誠實檢視</p>
+    </header>
+
+    <!-- 導航欄 -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="../" class="nav-link" data-tooltip="回到首頁">🏠 首頁</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../data-cleaning/" class="nav-link" data-tooltip="資料清理與品質控制">📋 資料清理</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../eda-analysis/" class="nav-link" data-tooltip="探索性資料分析">📊 探索性分析</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../multivariate-analysis/" class="nav-link" data-tooltip="多變量統計分析">🔬 多變量分析</a>
+                </li>
+                <li class="nav-item">
+                    <a href="./" class="nav-link active" data-tooltip="當前頁面">⚠️ 研究限制</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="container">
+        <!-- 開場 -->
+        <section class="section">
+            <h2 class="section-title">🎯 為什麼要主動列出限制？</h2>
+
+            <div class="academic-highlight">
+                <h4>研究的價值不在於「沒有缺點」，而在於「知道缺點在哪」</h4>
+                <p>本專案為課程期末作品，保留其原貌並以現在的眼光檢視。以下整理資料、統計方法兩大面向的主要限制與未來改進方向。完整版（含工程與可重現性面向）請見專案 GitHub 的 <code>LIMITATIONS.md</code>。</p>
+            </div>
+        </section>
+
+        <!-- 資料限制 -->
+        <section class="section">
+            <h2 class="section-title">📦 資料層面的限制</h2>
+
+            <div class="problem-card">
+                <h4>限制一：觀測值非獨立（重複測量）— 最關鍵</h4>
+                <p><strong>說明：</strong>1,031 筆記錄僅來自 71 位使用者（平均每人約 14.5 筆），同一人多天的資料高度相關。</p>
+                <ul>
+                    <li><strong>影響：</strong>PCA / 聚類 / ANOVA / 迴歸皆假設樣本獨立，此假設被違反，會<strong>高估顯著性與模型表現</strong>。</li>
+                    <li><strong>改進方向：</strong>改用混合效應模型（mixed-effects）或在交叉驗證採 <code>GroupKFold(_userId)</code>，確保同一人不同時落在訓練與測試集。</li>
+                </ul>
+            </div>
+
+            <div class="problem-card">
+                <h4>限制二：樣本代表性未知</h4>
+                <p><strong>說明：</strong>缺少使用者年齡、性別、健康狀況等人口學資訊，取樣方式不明。</p>
+                <ul>
+                    <li><strong>影響：</strong>無法控制干擾變項，結論難以推廣至一般族群。</li>
+                    <li><strong>改進方向：</strong>蒐集人口學共變項以納入模型，或明確界定研究的適用範圍。</li>
+                </ul>
+            </div>
+
+            <div class="problem-card">
+                <h4>限制三：時區假設與日期歸屬殘留誤差</h4>
+                <p><strong>說明：</strong>據 <code>startTimeOffsetInSeconds</code> 全為 GMT+8 推論使用者位於東亞；時區與睡眠類型修正後，原始與計算日期匹配率約 61.5%，最終配對率 86.9%。</p>
+                <ul>
+                    <li><strong>影響：</strong>跨時區旅行者的睡眠日期歸屬可能有誤；約 13% 睡眠記錄未能配對活動資料，恐造成選擇性偏誤。</li>
+                    <li><strong>改進方向：</strong>逐使用者推估時區、優化跨日歸屬演算法。</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 統計方法限制 -->
+        <section class="section">
+            <h2 class="section-title">📐 統計方法的限制</h2>
+
+            <div class="methodology-box">
+                <table class="statistical-table">
+                    <thead>
+                        <tr>
+                            <th>議題</th>
+                            <th>問題描述</th>
+                            <th>未來改進</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>衍生變數的循環性</strong></td>
+                            <td>以 <code>deep_sleep_ratio</code> 等睡眠衍生指標預測 <code>sleep_hours</code>，而該指標的分母即含睡眠時長，存在部分循環性。</td>
+                            <td>避免用睡眠衍生指標預測睡眠時長；改採「前一日活動 → 當日睡眠」的時序設計。</td>
+                        </tr>
+                        <tr>
+                            <td><strong>對分群做 ANOVA</strong></td>
+                            <td>群集由特徵空間切割而來，再檢驗群集間差異幾乎必然顯著，不足以作為「真實差異」的推論證據。</td>
+                            <td>區分描述性與推論性目標；以外部標準或事前定義的分組進行檢驗。</td>
+                        </tr>
+                        <tr>
+                            <td><strong>前處理洩漏進交叉驗證</strong></td>
+                            <td>標準化與 PCA 在全資料上先 fit 才做交叉驗證，測試資訊外洩，使表現被高估。</td>
+                            <td>將 <code>Scaler → PCA → Model</code> 封裝成 Pipeline，於每個 fold 內各自 fit。</td>
+                        </tr>
+                        <tr>
+                            <td><strong>挑選偏誤</strong></td>
+                            <td>以 6 模型 × 7 特徵組合挑「交叉驗證最高者」回報，無獨立保留測試集，系統性高估。</td>
+                            <td>保留一份從未參與調參的測試集，回報最終表現。</td>
+                        </tr>
+                        <tr>
+                            <td><strong>因子分析適切性不足</strong></td>
+                            <td>KMO = 0.41（低於 0.5 門檻），且出現共同性 &gt; 1 的 Heywood case，解可能不當。</td>
+                            <td>重新挑選變數集或改採其他降維方法，並完整報告適切性指標。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="academic-insight">
+                <h4>🔎 誠實看待模型表現</h4>
+                <p>睡眠時長預測模型的交叉驗證 R² 為 <strong>-8.5%</strong>。專案選擇如實呈現此結果，而非以過度調參美化數字——這代表「以行為指標預測睡眠時長」本身的困難，是有意義的負面發現。</p>
+            </div>
+        </section>
+
+        <!-- 未來改進 -->
+        <section class="section">
+            <h2 class="section-title">🚀 未來改進方向</h2>
+
+            <div class="solution-card">
+                <h4>✅ 若重做這個專案，我會這樣改</h4>
+                <ol>
+                    <li><strong>尊重重複測量結構：</strong>混合效應模型或 <code>GroupKFold(_userId)</code>。</li>
+                    <li><strong>杜絕前處理洩漏：</strong>用 Pipeline 在 fold 內 fit，並保留獨立測試集。</li>
+                    <li><strong>重新設計預測問題：</strong>時序因果（前一日活動 → 當日睡眠），避免循環變數。</li>
+                    <li><strong>強化資料品質：</strong>蒐集人口學共變項、統一異常值準則、處理哨兵值與近零變異欄位。</li>
+                    <li><strong>誠實的因子分析：</strong>在 KMO 偏低與 Heywood case 下重新評估方法。</li>
+                    <li><strong>工程重構：</strong>分析邏輯抽到模組、以設定檔管理路徑、加入環境鎖定與基本測試。</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- 完整版連結 -->
+        <section class="section">
+            <div class="academic-highlight">
+                <h4>📄 想看完整版？</h4>
+                <p>本頁為訪客導向的精選版。包含工程與可重現性面向的<strong>完整 17 點限制與 6 項改進</strong>，請見 GitHub 專案文件：</p>
+                <p>
+                    👉 <a href="https://github.com/Raymond-Chen-das/garmin-multivariate-analysis/blob/main/LIMITATIONS.md" target="_blank" rel="noopener"><strong>LIMITATIONS.md（完整版）</strong></a>
+                    ｜
+                    🔒 <a href="https://github.com/Raymond-Chen-das/garmin-multivariate-analysis/blob/main/DATA.md" target="_blank" rel="noopener"><strong>DATA.md（資料來源與隱私）</strong></a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <p><strong>Garmin運動手環《多變量分析：期末專題實作報告》</strong></p>
+        <p>作者：CHIA HSIANG, CHEN｜東吳大學資料科學系在職專班｜2025 年</p>
+    </footer>
+
+    <!-- 載入JavaScript -->
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/navigation.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('⚠️ 研究限制頁面載入完成');
+            if (window.NavigationUtils && NavigationUtils.createBackToTop) {
+                NavigationUtils.createBackToTop();
+            }
+        });
+    </script>
+</body>
+</html>
