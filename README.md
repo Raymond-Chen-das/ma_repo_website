@@ -4,7 +4,7 @@
 > pipeline：資料清理 → 探索性分析 → PCA / 聚類 / ANOVA / 迴歸 → 驗證性因子分析，
 > 並產出互動式視覺化報告。
 
-📊 **互動式報告（GitHub Pages）**：<https://raymond-chen-das.github.io/ma_repo_website/>
+📊 **互動式報告（GitHub Pages）**：<https://raymond-chen-das.github.io/garmin-multivariate-analysis/>
 
 ---
 
